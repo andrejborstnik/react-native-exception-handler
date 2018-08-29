@@ -14,7 +14,6 @@ import android.widget.TextView;
 
 public class DefaultErrorScreen extends Activity {
     private static String TAG = "RN_ERROR_HANDLER";
-    private Button quitButton;
     private Button relaunchButton;
     private Button showDetailsButton;
     private TextView stackTraceView;
@@ -24,37 +23,12 @@ public class DefaultErrorScreen extends Activity {
         super.onCreate(savedInstanceState);
         String stackTraceString = getIntent().getExtras().getString("stack_trace_string");
         setContentView(R.layout.default_error_screen);
-        quitButton = (Button) findViewById(R.id.eh_quit_button);
         relaunchButton = (Button) findViewById(R.id.eh_restart_button);
-        showDetailsButton = (Button) findViewById(R.id.eh_show_details_button);
-        stackTraceView = (TextView) findViewById(R.id.eh_stack_trace_text_view);
-        stackTraceView.setText(stackTraceString);
-
-        showDetailsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                int stackTraceViewVisibility = stackTraceView.getVisibility();
-                if(stackTraceViewVisibility == View.VISIBLE){
-                    stackTraceView.setVisibility(View.GONE);
-                    showDetailsButton.setText("SHOW DETAILS");
-                }else{
-                    stackTraceView.setVisibility(View.VISIBLE);
-                    showDetailsButton.setText("HIDE DETAILS");
-                }
-            }
-        });
 
         relaunchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 doRestart(getApplicationContext());
-            }
-        });
-
-        quitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                System.exit(0);
             }
         });
     }

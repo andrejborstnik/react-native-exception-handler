@@ -41,10 +41,10 @@ void (^defaultNativeErrorCallbackBlock)(NSException *exception, NSString *readea
 ^(NSException *exception, NSString *readeableException){
     
     UIAlertController* alert = [UIAlertController
-                                alertControllerWithTitle:@"Unexpected error occured"
+                                alertControllerWithTitle:@"An error occured"
                                 message:[NSString stringWithFormat:@"%@\n%@",
-                                         @"Apologies..The app will close now \nPlease restart the app\n",
-                                         readeableException]
+                                         @"Apologies...\n Please restart the app\n",
+                                         @""]
                                 preferredStyle:UIAlertControllerStyleAlert];
     
     UIApplication* app = [UIApplication sharedApplication];
