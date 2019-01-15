@@ -26,7 +26,7 @@ const NSInteger RNUncaughtExceptionHandlerReportAddressCount = 5;
 bool dismissApp = true;
 
 //variable to hold the custom error handler passed while customizing native handler
-void (^nativeErrorCallbackBlock)(NSException *exception, NSString *readeableException);
+void (^nativeErrorCallbackBlock)(NSException *exception, NSString *readeableException, NSArray *callStack);
 
 // variable to hold the previously defined error handler
 NSUncaughtExceptionHandler* previousNativeErrorCallbackBlock;
@@ -34,11 +34,11 @@ NSUncaughtExceptionHandler* previousNativeErrorCallbackBlock;
 BOOL callPreviousNativeErrorCallbackBlock = false;
 
 //variable to hold the js error handler when setting up the error handler in RN.
-void (^jsErrorCallbackBlock)(NSException *exception, NSString *readeableException);
+void (^jsErrorCallbackBlock)(NSException *exception, NSString *readeableException, NSArray *callStack);
 
 //variable that holds the default native error handler
-void (^defaultNativeErrorCallbackBlock)(NSException *exception, NSString *readeableException) =
-^(NSException *exception, NSString *readeableException){
+void (^defaultNativeErrorCallbackBlock)(NSException *exception, NSString *readeableException, NSArray *callStack) =
+^(NSException *exception, NSString *readeableException, NSArray *callStack){
     
     // UIAlertController* alert = [UIAlertController
     //                             alertControllerWithTitle:@"An error occured"
@@ -67,8 +67,8 @@ RCT_EXPORT_MODULE();
 // METHOD TO INITIALIZE THE EXCEPTION HANDLER AND SET THE JS CALLBACK BLOCK
 RCT_EXPORT_METHOD(setHandlerforNativeException:(BOOL)callPreviouslyDefinedHandler withCallback: (RCTResponseSenderBlock)callback)
 {
-    jsErrorCallbackBlock = ^(NSException *exception, NSString *readeableException){
-        callback(@[readeableException]);
+    jsErrorCallbackBlock = ^(NSException *exception, NSString *readeableException, NSArray *callStack){
+        callback(@[readeableException, callStack] );
     };
     
     previousNativeErrorCallbackBlock = NSGetUncaughtExceptionHandler();
@@ -90,7 +90,7 @@ RCT_EXPORT_METHOD(setHandlerforNativeException:(BOOL)callPreviouslyDefinedHandle
 // METHODS TO CUSTOMIZE THE DEFAULT NATIVE ERROR HANDLER
 // =====================================================
 
-+ (void) replaceNativeExceptionHandlerBlock:(void (^)(NSException *exception, NSString *readeableException))nativeCallbackBlock{
++ (void) replaceNativeExceptionHandlerBlock:(void (^)(NSException *exception, NSString *readeableException, NSArray *callStack))nativeCallbackBlock{
     NSLog(@"SET THE CALLBACK HANDLER NATTTIVEEE");
     nativeErrorCallbackBlock = nativeCallbackBlock;
 }
@@ -108,6 +108,17 @@ RCT_EXPORT_METHOD(setHandlerforNativeException:(BOOL)callPreviouslyDefinedHandle
 
 - (void)handleException:(NSException *)exception
 {
+
+    NSMutableDictionary *userInfo =
+    [NSMutableDictionary
+     dictionaryWithObject:[NSNumber numberWithInt:signal]
+     forKey:RNUncaughtExceptionHandlerSignalKey];
+
+    NSArray *callStack = [ReactNativeExceptionHandler backtrace];
+    [userInfo
+     setObject:callStack
+     forKey:RNUncaughtExceptionHandlerAddressesKey];
+
     NSString * readeableError = [NSString stringWithFormat:NSLocalizedString(@"%@\n%@", nil),
                                  [exception reason],
                                  [[exception userInfo] objectForKey:RNUncaughtExceptionHandlerAddressesKey]];
@@ -119,11 +130,11 @@ RCT_EXPORT_METHOD(setHandlerforNativeException:(BOOL)callPreviouslyDefinedHandle
     }
     
     if(nativeErrorCallbackBlock != nil){
-        nativeErrorCallbackBlock(exception,readeableError);
+        nativeErrorCallbackBlock(exception,readeableError, callStack);
     }else{
-        defaultNativeErrorCallbackBlock(exception,readeableError);
+        defaultNativeErrorCallbackBlock(exception,readeableError, callStack);
     }
-    jsErrorCallbackBlock(exception,readeableError);
+    jsErrorCallbackBlock(exception,readeableError, callStack);
     
     CFRunLoopRef runLoop = CFRunLoopGetCurrent();
     CFArrayRef allModes = CFRunLoopCopyAllModes(runLoop);
