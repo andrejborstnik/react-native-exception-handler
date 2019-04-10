@@ -40,22 +40,22 @@ void (^jsErrorCallbackBlock)(NSException *exception, NSString *readeableExceptio
 void (^defaultNativeErrorCallbackBlock)(NSException *exception, NSString *readeableException, NSArray *callStack) =
 ^(NSException *exception, NSString *readeableException, NSArray *callStack){
     
-    // UIAlertController* alert = [UIAlertController
-    //                             alertControllerWithTitle:@"An error occured"
-    //                             message:[NSString stringWithFormat:@"%@\n%@",
-    //                                      @"Apologies...\n Please restart the app\n",
-    //                                      @""]
-    //                             preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertController* alert = [UIAlertController
+                                alertControllerWithTitle:@"Aw, Snap!"
+                                message:[NSString stringWithFormat:@"%@\n%@",
+                                         @"Something went wrong while opening the app. Please restart the app, it should be fixed now.",
+                                         @""]
+                                preferredStyle:UIAlertControllerStyleAlert];
 
-    // UIApplication* app = [UIApplication sharedApplication];
-    // UIViewController * rootViewController = app.delegate.window.rootViewController;
-    // [rootViewController presentViewController:alert animated:YES completion:nil];
+    UIApplication* app = [UIApplication sharedApplication];
+    UIViewController * rootViewController = app.delegate.window.rootViewController;
+    [rootViewController presentViewController:alert animated:YES completion:nil];
 
-    // [NSTimer scheduledTimerWithTimeInterval:5.0
-    //                                  target:[ReactNativeExceptionHandler class]
-    //                                selector:@selector(releaseExceptionHold)
-    //                                userInfo:nil
-    //                                 repeats:NO];
+    [NSTimer scheduledTimerWithTimeInterval:5.0
+                                     target:[ReactNativeExceptionHandler class]
+                                   selector:@selector(releaseExceptionHold)
+                                   userInfo:nil
+                                    repeats:NO];
 };
 
 // ====================================
@@ -161,7 +161,7 @@ RCT_EXPORT_METHOD(setHandlerforNativeException:(BOOL)callPreviouslyDefinedHandle
     signal(SIGBUS, SIG_DFL);
     signal(SIGPIPE, SIG_DFL);
     
-    // kill(getpid(), [[[exception userInfo] objectForKey:RNUncaughtExceptionHandlerSignalKey] intValue]);
+    kill(getpid(), [[[exception userInfo] objectForKey:RNUncaughtExceptionHandlerSignalKey] intValue]);
     
 }
 
